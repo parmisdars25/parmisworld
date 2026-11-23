@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دنیای اختصاصی پارمیس 🩵</title>
+    <style>
+/* ================== استایل‌های بخش چت خاطره انگیز جدید ================== */
+        #chat-memory-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #0f172a, #1e1b4b, #311042);
+            z-index: 5500; display: none; flex-direction: column; align-items: center;
+            justify-content: center; padding: 20px; box-sizing: border-box;
+        }
+        .chat-container {
+            width: 100%; max-width: 480px; height: 85vh;
+            background: rgba(255, 255, 255, 0.07); backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 25px;
+            display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+        .chat-header {
+            background: rgba(255, 255, 255, 0.1); padding: 15px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1); color: white;
+        }
+        .chat-header h3 { font-size: 1.1rem; font-weight: bold; color: #fef08a; }
+        .chat-body {
+            flex: 1; padding: 20px; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 12px;
+            scrollbar-width: thin; scroll-behavior: smooth;
+        }
+        .msg-row { width: 100%; display: flex; margin-bottom: 4px; }
+        
+        /* جهت چت‌ها طبق درخواست: مهدی چپ، پارمیس راست */
+        .msg-row.mahdi { justify-content: flex-start; }
+        .msg-row.parmis { justify-content: flex-end; }
+        
+        .msg-bubble {
+            padding: 10px 16px; max-width: 75%; font-size: 0.98rem; line-height: 1.6;
+            position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .msg-row.mahdi .msg-bubble {
+            background: #a0c4ff; color: #1e1b4b;
+            border-radius: 18px 18px 18px 4px; text-align: right;
+        }
+        .msg-row.parmis .msg-bubble {
+            background: #cdb4db; color: #1e1b4b;
+            border-radius: 18px 18px 4px 18px; text-align: right;
+        }
+        .msg-name { display: block; font-size: 0.75rem; margin-bottom: 4px; font-weight: bold; opacity: 0.7; }
+        .msg-time { display: block; font-size: 0.7rem; text-align: left; margin-top: 4px; opacity: 0.6; direction: ltr; }
+        
+        /* استایل ایز تایپینگ سه نقطه‌ای */
+        .typing-bubble { padding: 12px 20px; border-radius: 18px; background: rgba(255,255,255,0.15); display: flex; align-items: center; gap: 4px; }
+        .typing-dots span { width: 6px; height: 6px; background: #fff; border-radius: 50%; display: inline-block; animation: blinkDots 1.4s infinite ease-in-out both; }
+        .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes blinkDots { 0%, 80%, 100% { transform: scale(0); opacity: 0.3; } 40% { transform: scale(1); opacity: 1; } }
+        .chat-footer-btn { background: #fef08a; color: #1e1b4b; border: none; padding: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; text-align: center; font-size: 1rem; }
+        .chat-footer-btn:hover { background: white; }
+        /* تنظیمات ظاهری سایت - تم آبی آسمانی و بنفش ملایم */
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Vazirmatn', sans-serif; direction: rtl; }
+        body { background: linear-gradient(-45deg, #a0c4ff, #cdb4db, #ffffff, #b5e2fa); background-size: 400% 400%; animation: gradient 15s ease infinite; color: #3d5a80; overflow-x: hidden; }
+        @keyframes gradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        
+        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #a0c4ff, #cdb4db); display: flex; justify-content: center; align-items: center; z-index: 1000; transition: 0.8s; text-align: center; }
+        .login-card { background: rgba(255,255,255,0.4); backdrop-filter: blur(10px); padding: 40px; border-radius: 30px; border: 1px solid white; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .name { font-size: 3.5rem; color: #6366f1; margin: 15px 0; font-weight: bold; }
+        .main-btn { padding: 15px 40px; background: white; border: none; border-radius: 50px; color: #7209b7; font-weight: bold; cursor: pointer; font-size: 1.1rem; box-shadow: 0 5px 15px rgba(0,0,0,0.1); transition: 0.3s; position: relative; overflow: hidden; }
+        .main-btn:hover { transform: scale(1.05); }
+
+        /* انیمیشن لودینگ کامل شدن ماه */
+        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0c0f26; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; color: white; }
+        .moon-loader { width: 100px; height: 100px; border-radius: 50%; position: relative; background: transparent; box-shadow: inset 16px 0px 0px 0px #fef08a; animation: moonPhase 3.5s linear infinite alternate; margin-bottom: 25px; }
+        @keyframes moonPhase {
+            0% { box-shadow: inset 0px 0px 0px 0px #fef08a; background: rgba(255,255,255,0.05); }
+            25% { box-shadow: inset 25px 0px 0px 0px #fef08a; }
+            50% { box-shadow: inset 50px 0px 0px 0px #fef08a; }
+            75% { box-shadow: inset 75px 0px 0px 0px #fef08a; }
+            100% { box-shadow: inset 100px 0px 0px 0px #fef08a; background: #fef08a; filter: drop-shadow(0 0 20px #fef08a); }
+        }
+        .loading-text { font-size: 1.2rem; color: #fef08a; font-weight: bold; letter-spacing: 1px; animation: pulseText 1.5s infinite alternate; }
+        @keyframes pulseText { from { opacity: 0.5; } to { opacity: 1; } }
+
+        #main-content { max-width: 550px; margin: 0 auto; display: none; padding: 20px; padding-top: 80px; position: relative; z-index: 10; }
+        .card { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border-radius: 25px; padding: 25px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; border: 1px solid rgba(255,255,255,0.3); }
+        h2 { color: #6366f1; margin-bottom: 20px; font-size: 1.4rem; }
+
+        /* دکمه فراری */
+        .btn-group { display: flex; justify-content: center; gap: 25px; margin-top: 20px; height: 60px; position: relative; align-items: center; }
+        .btn-yes { background: #4caf50; color: white; border: none; padding: 12px 35px; border-radius: 50px; cursor: pointer; font-weight: bold; font-size: 1.1rem; }
+        .btn-no { background: #f44336; color: white; border: none; padding: 12px 35px; border-radius: 50px; font-weight: bold; font-size: 1.1rem; position: relative; transition: 0.1s; cursor: pointer; }
+
+        /* گالری ۶ تایی */
+        .gallery { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .photo-frame img { width: 100%; height: 160px; object-fit: cover; border-radius: 18px; border: 4px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
+
+        /* ثانیه‌شمار */
+        .counter { display: flex; justify-content: center; gap: 10px; direction: ltr; margin-top: 10px; }
+        .unit { background: white; padding: 12px; border-radius: 15px; min-width: 70px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+        .unit span { display: block; font-size: 1.5rem; font-weight: bold; color: #7209b7; }
+        .unit label { font-size: 0.75rem; color: #888; }
+
+        /* استیچ */
+        .stitch-img { width: 150px; cursor: pointer; animation: bounce 2s infinite; margin: 10px 0; border-radius: 50%; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+        .bubble { background: white; padding: 12px 20px; border-radius: 20px; border: 1px solid #eee; margin-top: 10px; font-size: 1rem; display: inline-block; box-shadow: 0 4px 10px rgba(0,0,0,0.03); transition: 0.3s; }
+
+        /* اسپایدرمن ارتقا یافته با قابلیت شخصی‌سازی عکس پس‌زمینه */
+        .spidey-theme { 
+            background: linear-gradient(135deg, rgba(229, 57, 53, 0.9), rgba(26, 35, 126, 0.95)), url('YOUR_SPIDERMAN_IMAGE_LINK_HERE'); 
+            background-size: cover; 
+            background-position: center; 
+            color: white; 
+            border: 3px solid #e53935;
+            box-shadow: 0 10px 25px rgba(229, 57, 53, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        .spidey-theme::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.2); z-index: 1; }
+        .spidey-content { position: relative; z-index: 2; }
+        .spidey-theme h2, .spidey-theme h3 { color: white !important; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .badge { background: #00e676; color: black; padding: 5px 18px; border-radius: 50px; font-size: 0.85rem; font-weight: bold; margin: 15px 0; display: inline-block; box-shadow: 0 4px 10px rgba(0,230,118,0.3); }
+
+        /* ۱۰۰ دلیل */
+        .reasons-container { max-height: 350px; overflow-y: auto; text-align: right; background: rgba(255,255,255,0.5); border-radius: 20px; padding: 20px; scrollbar-width: thin; border: 1px solid rgba(255,255,255,0.6); }
+        .reason-line { padding: 12px 8px; border-bottom: 1px dashed rgba(99, 102, 241, 0.3); font-size: 0.98rem; line-height: 1.6; color: #2d3748; transition: 0.2s; }
+        .reason-line:hover { background: rgba(255,255,255,0.5); border-radius: 10px; padding-forward: 15px; }
+
+        /* نامه مخفی */
+        .envelope { font-size: 4rem; cursor: pointer; transition: 0.3s; }
+        .envelope:hover { transform: scale(1.1); }
+        .letter-text { display: none; background: #fffdf0; padding: 25px; border-radius: 20px; margin-top: 20px; text-align: right; line-height: 2; box-shadow: inset 0 0 15px rgba(0,0,0,0.05); border-left: 5px solid #ffb74d; }
+
+        /* پلیر موزیک */
+        .music-player { position: fixed; top: 15px; left: 15px; background: white; padding: 10px 20px; border-radius: 50px; font-size: 0.85rem; cursor: pointer; z-index: 1100; box-shadow: 0 5px 20px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 8px; }
+        
+        /* تصاویر دلخواه حاشیه سایت */
+        .floral-border { position: fixed; width: 70px; height: auto; opacity: 0.5; z-index: 0; animation: float 6s ease-in-out infinite; pointer-events: none; border-radius: 10px; }
+        .f1 { top: 15%; left: 5%; }
+        .f2 { top: 40%; right: 5%; animation-delay: 1s; width: 80px; }
+        .f3 { bottom: 25%; left: 8%; animation-delay: 2s; }
+        .f4 { bottom: 10%; right: 10%; animation-delay: 3s; width: 60px; }
+        .f5 { top: 70%; left: 10%; animation-delay: 1.5s; }
+        @keyframes float { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-15px) rotate(10deg); } }
+
+        /* تایم‌لاین */
+        .timeline { position: relative; max-width: 400px; margin: 0 auto; text-align: right; padding-right: 20px; border-right: 3px solid #cdb4db; }
+        .tl-item { position: relative; margin-bottom: 25px; padding-right: 20px; }
+        .tl-item::before { content: ''; position: absolute; right: -29px; top: 0; width: 15px; height: 15px; background: white; border: 4px solid #6366f1; border-radius: 50%; }
+        .tl-item span { font-size: 1.1rem; font-weight: bold; color: #4a148c; }
+        .tl-item small { display: block; font-size: 0.95rem; color: #555; margin-top: 5px; }
+
+        /* ماه مخفی و پنجره دلخوری */
+        #hidden-moon { position: fixed; top: 20px; right: 20px; font-size: 2.5rem; cursor: pointer; z-index: 1100; display: none; transition: 0.3s; animation: glow 2s infinite alternate; }
+        #hidden-moon:hover { transform: scale(1.2); }
+        @keyframes glow { from { filter: drop-shadow(0 0 5px #fff); } to { filter: drop-shadow(0 0 15px #facc15); } }
+        
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); z-index: 4000; justify-content: center; align-items: center; }
+        .modal-content { background: #fffdf0; padding: 30px; border-radius: 25px; max-width: 90%; width: 500px; text-align: right; max-height: 85vh; overflow-y: auto; box-shadow: 0 15px 30px rgba(0,0,0,0.2); }
+        
+        /* صفحه تاریک ناراحتی */
+        #sad-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0a0a0a; color: #e0e0e0; z-index: 5000; display: none; flex-direction: column; align-items: center; padding: 40px 20px; box-sizing: border-box; overflow-y: auto; }
+        #sad-text-container { font-size: 1.2rem; line-height: 2.2; max-width: 600px; text-align: center; padding-bottom: 50px; }
+        .close-sad { position: fixed; top: 20px; right: 20px; background: rgba(255,255,255,0.2); border: none; color: white; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-size: 1rem; z-index: 5100; }
+
+        /* صفحه بغل و دست‌های کارتونی */
+        #hug-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.4); backdrop-filter: blur(15px); z-index: 6000; display: none; overflow: hidden; justify-content: center; align-items: center; }
+        .arm { position: absolute; font-size: 8rem; transition: transform 1.5s ease-in-out; top: 50%; }
+        #arm-left { left: -150px; transform: translateY(-50%); }
+        #arm-right { right: -150px; transform: translateY(-50%); }
+        #hug-emoji { font-size: 10rem; display: none; animation: popHeart 0.5s ease forwards; }
+        @keyframes popHeart { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        footer { text-align: center; padding: 50px 0; color: #4a148c; position: relative; z-index: 10;}
+
+        /* ================== دنیای ماه (بدون صندوقچه) ================== */
+        #moon-world-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, #1e1b4b, #020617); z-index: 3000; display: none; flex-direction: column; align-items: center; padding: 40px 20px; overflow-y: auto; overflow-x: hidden; box-sizing: border-box; }
+        
+        .stars-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+        .star-dot { position: absolute; background: white; border-radius: 50%; animation: twinkle 2s infinite ease-in-out; }
+        @keyframes twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
+
+        #custom-moon { max-width: 250px; height: auto; border-radius: 50%; box-shadow: 0 0 50px rgba(254, 240, 138, 0.4); margin: 30px 0; z-index: 5; animation: moonPulse 4s infinite alternate; object-fit: cover; }
+        @keyframes moonPulse { from { box-shadow: 0 0 30px rgba(254, 240, 138, 0.3); } to { box-shadow: 0 0 60px rgba(254, 240, 138, 0.8); } }
+
+        .moon-card { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 25px; width: 100%; max-width: 500px; text-align: center; color: white; margin-bottom: 25px; z-index: 5; }
+        
+        /* انیمیشن شهاب سنگ */
+        .shooting-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5500; overflow: hidden; }
+        .shooting-wrapper { position: absolute; display: flex; align-items: center; gap: 15px; opacity: 0; }
+        .shooting-img { width: 100px; height: auto; transform: rotate(-30deg); }
+        .shooting-phrase { background: rgba(255,255,255,0.9); color: #1e1b4b; padding: 10px 20px; border-radius: 30px; font-weight: bold; font-size: 1.1rem; box-shadow: 0 5px 15px rgba(254, 240, 138, 0.5); text-align: center; }
+        
+        @keyframes shootAcross {
+            0% { transform: translate(120vw, -20vh); opacity: 1; }
+            80% { opacity: 1; }
+            100% { transform: translate(-50vw, 80vh); opacity: 0; }
+        }
+
+        /* انیمیشن چرخش دور عکس */
+        #orbit-system { position: relative; width: 300px; height: 300px; margin: 40px auto; display: none; z-index: 5; }
+        #center-photo { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid #fef08a; box-shadow: 0 0 25px #fef08a; }
+        .orbit-item { position: absolute; top: 50%; left: 50%; width: 40px; height: 40px; margin-top: -20px; margin-left: -20px; font-size: 2rem; display: flex; justify-content: center; align-items: center; animation: orbitAnim linear infinite; }
+        .o-sun { animation-duration: 6s; }
+        .o-moon { animation-duration: 8s; animation-direction: reverse; }
+        .o-star { animation-duration: 4s; }
+        .o-mahdi { animation-duration: 10s; }
+        @keyframes orbitAnim {
+            from { transform: rotate(0deg) translateX(120px) rotate(0deg); }
+            to { transform: rotate(360deg) translateX(120px) rotate(-360deg); }
+        }
+
+        /* ================== استایل‌های کتابچه سه‌بعدی باز شونده (جدید) ================== */
+        #book-overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(12, 15, 38, 0.9); backdrop-filter: blur(12px); 
+            z-index: 7000; display: none; flex-direction: column; 
+            justify-content: center; align-items: center; 
+        }
+        .book-wrapper { 
+            width: 95%; max-width: 650px; height: 65vh; min-height: 400px;
+            display: flex; flex-direction: column; align-items: center; 
+            perspective: 1500px;
+        }
+        /* طرح گرافیکی کتاب باز شده واقعی */
+        .real-book {
+            width: 100%; height: 100%;
+            background: #5c3d2e; /* جلد چرمی یا چوبی زیر کتاب */
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.6), inset 0 0 20px rgba(0,0,0,0.4);
+            display: flex;
+            position: relative;
+        }
+        .real-book::before {
+            content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+            width: 4px; height: 100%; background: rgba(0,0,0,0.3); z-index: 10;
+            box-shadow: 0 0 10px rgba(0,0,0,0.8);
+        }
+        .book-page-half {
+            width: 50%; height: 100%;
+            background: #fffdf0; /* رنگ واقعی کاغذ قدیمی قشنگ */
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
+            transition: transform 0.4s ease, opacity 0.4s ease;
+        }
+        .left-page {
+            border-radius: 4px 15px 15px 4px;
+            border-left: 1px solid rgba(0,0,0,0.08);
+            text-align: right;
+        }
+        .right-page {
+            border-radius: 15px 4px 4px 15px;
+            border-right: 1px solid rgba(0,0,0,0.08);
+            text-align: right;
+        }
+        .book-page-title {
+            font-size: 1.3rem; font-weight: bold; color: #7209b7; margin-bottom: 15px;
+            border-bottom: 2px dashed rgba(114, 9, 183, 0.2); padding-bottom: 5px; width: 100%; text-align: center;
+        }
+        .book-page-text-p {
+            font-size: 1.02rem; line-height: 1.9; color: #3a3a3a; text-align: justify; white-space: pre-line; width: 100%;
+        }
+        .book-controls { 
+            display: flex; justify-content: space-between; align-items: center; 
+            width: 100%; max-width: 650px; margin-top: 25px; 
+        }
+        .book-btn { 
+            background: #fffdf0; color: #4a148c; border: none; 
+            padding: 12px 30px; border-radius: 50px; font-weight: bold; cursor: pointer; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); transition: 0.3s;
+        }
+        .book-btn:active { transform: scale(0.95); }
+        .book-btn:hover { background: #7209b7; color: white; }
+        #page-counter { color: white; font-weight: bold; font-size: 1.2rem; direction: ltr; background: rgba(255,255,255,0.1); padding: 5px 15px; border-radius: 20px; }
+        
+        /* انیمیشن‌های تعویض صفحه ورق خوردنی */
+        .page-turn-anim { animation: turnPageEffect 0.5s ease-in-out; }
+        @keyframes turnPageEffect {
+            0% { opacity: 0.7; transform: rotateY(0deg); }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; transform: rotateY(0deg); }
+        }
+
+        /* خط افکت تایپ در جعبه حرف قشنگ */
+        .typing-cursor { border-left: 2px solid #d81b60; animation: blinkCursor 0.6s infinite; }
+        @keyframes blinkCursor { from, to { border-color: transparent; } 50% { border-color: #d81b60; } }
+    </style>
+</head>
+<body>
+
+    <div class="music-player" onclick="toggleMusic()">
+        <span id="m-icon">🎵</span> <span id="m-text">آهنگ رویایی ما</span>
+        <audio id="bg-music" loop src="https://www.dropbox.com/scl/fi/orb9c3fofi4eiy1bn7nnu/Sina-Sae-Rose.mp3?rlkey=5u0qxcicmmmmj0o0tuhd6rq1m&st=5eou6230&dl=1"></audio>
+    </div>
+
+    <div id="hidden-moon" onclick="openMoonModal()">🌙</div>
+
+    <img src="https://www.dropbox.com/scl/fi/5r0bpijugrgk5rlkn4bmp/IMG_2871.PNG?rlkey=btvjcs16b7k9qov4hgmw98ns3&st=5r8qmh3o&dl=1" class="floral-border f1" alt="گل ۱">
+    <img src="https://www.dropbox.com/scl/fi/l2qv77f9cd0ex6pc96bh8/IMG_2870.PNG?rlkey=blv2lk6woyzkzfafi0h9eooki&st=94xj2xuo&dl=1" class="floral-border f2" alt="گل ۲">
+    <img src="https://www.dropbox.com/scl/fi/35hol84832kwil38bq58x/IMG_2821.PNG?rlkey=9xi433crj0wexw1ewufujm2sg&st=xbbr9lh6&dl=1" class="floral-border f3" alt="گل ۳">
+    <img src="https://www.dropbox.com/scl/fi/5r0bpijugrgk5rlkn4bmp/IMG_2871.PNG?rlkey=btvjcs16b7k9qov4hgmw98ns3&st=5r8qmh3o&dl=1" class="floral-border f4" alt="گل ۴">
+    <img src="https://www.dropbox.com/scl/fi/35hol84832kwil38bq58x/IMG_2821.PNG?rlkey=9xi433crj0wexw1ewufujm2sg&st=xbbr9lh6&dl=1" class="floral-border f5" alt="گل ۵">
+
+    <!-- صفحه لاگین اولیه -->
+    <div id="login-screen">
+        <div class="login-card">
+            <h1 style="font-size: 1.5rem; color: #555;">برای مهم‌ترین دختر دنیا</h1>
+            <div class="name">Parmis 💙</div>
+            <p style="color: #888; margin-bottom: 20px;">ساخته شده با عشق توسط مهدی</p>
+            <button class="main-btn" onclick="triggerLoading()">ورود به دنیای پارمیس ✨</button>
+        </div>
+    </div>
+
+    <!-- انیمیشن لودینگ کامل شدن ماه درخواستی -->
+    <div id="loading-overlay">
+        <div class="moon-loader"></div>
+        <div class="loading-text">در حال کامل شدن ماه دنیای پارمیس... 🌙</div>
+    </div>
+
+    <!-- محتوای اصلی سایت -->
+    <div id="main-content">
+        
+        <section class="card">
+            <h2>سلام دختر کوچولوی من… 🦋</h2>
+            <p style="line-height: 1.8; color: #555;">اینجا یه سایت معمولی نیست، اینجا یه تیکه از قلب منه که فقط برای تو ساختم تا بدونی چقدر برام عزیزی.</p>
+        </section>
+
+        <section class="card" style="background: linear-gradient(135deg, #1e1b4b, #311042); border-color: #fef08a;">
+            <h2 style="color: #fef08a;">✨ بخش اختصاصی دنیای ماه ✨</h2>
+            <button class="main-btn" style="background: #fef08a; color: #1e1b4b;" onclick="openMoonWorld()">ورود به دنیای ماه 🌙</button>
+        </section>
+
+        <section class="card">
+            <h2>🗓️ مسیر رابطه ما</h2>
+            <div class="timeline">
+                <div class="tl-item"><span> 03:32  🩵 ۱۱ فروردین</span><small>اولین دوستت دارم</small></div>
+                <div class="tl-item"><span> 13:35--11:55   🌷 ۲۳ اردیبهشت</span><small>اولین دیت</small></div>
+                <div class="tl-item"><span>18.56    🫠💙 ۲۶ اردیبهشت</span><small>شروع رابطه</small></div>
+            </div>
+        </section>
+
+        <section class="card" style="background: rgba(255, 253, 240, 0.8); border: 2px dashed #cdb4db;">
+            <h2 style="color: #7209b7;">📖 حرفای دلم برای تو</h2>
+            <p style="font-size: 0.95rem; margin-bottom: 15px; color: #555;">   حرف های نگفته ...</p>
+            <button class="main-btn" style="background: #a0c4ff; color: #1e1b4b;" onclick="openBook()">یه کتابچه واقعی 🫠💙</button>
+        </section>
+
+        <section class="card" style="background: rgba(255,182,193,0.5); border-color: #ff99aa;">
+            <h2>احساس خستگی یا ناراحتی می‌کنی?</h2>
+            <button class="main-btn" style="background: #111; color: #fff;" onclick="startSadFlow()">اگر ناراحتی اینجا رو بزن 🥺</button>
+        </section>
+
+        <section class="card" style="background: rgba(181, 226, 250, 0.7);">
+            <h2>دوست داری بغلت کنم؟</h2>
+            <button class="main-btn" style="background: #4a148c; color: #fff;" onclick="startHug()">نیاز به بغل داری؟ 🫂</button>
+        </section>
+
+        <section class="card">
+            <h2>پارمیس؟ یه سوال مهم... 🥺</h2>
+            <p>منو دوست داری؟</p>
+            <div class="btn-group">
+                <button class="btn-yes" onclick="sayYes()">آره 😍</button>
+                <button id="no-btn" class="btn-no" onmouseover="moveButton()" onclick="moveButton()">نه 😐</button>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>📸 آلبوم لحظات قشنگت</h2>
+            <div class="gallery">
+                <div class="photo-frame"><img src="https://www.dropbox.com/scl/fi/5ntoght9aa4m6uqpihvwb/photo_2026-06-19_16-02-47.jpg?rlkey=pk65rzcugqzop1pwpr15p68jy&st=o4huq1l8&dl=1"></div>
+                <div class="photo-frame"><img src="https://www.dropbox.com/scl/fi/c1h60oqpj3tmcb9wu5bn9/photo_2026-06-19_16-32-35.jpg?rlkey=eedvycqxuxjxxnubn7mo1alt4&st=lfq935gi&dl=1"></div>
+                <div class="photo-frame"><img src="https://www.dropbox.com/scl/fi/ev6m1vbl9lov07d5yydti/photo_2026-06-19_16-32-41.jpg?rlkey=jow7qan9ct0xgzy4f1t7zmkks&st=9w1g3e0v&dl=1"></div>
+                <div class="photo-frame"><img src="https://www.dropbox.com/scl/fi/kqnq0y1avc0qdhje7efef/photo_2026-06-19_16-32-46.jpg?rlkey=rqtwa9aupnzqja97emiq06bjn&st=tytlt0uj&dl=1"></div>
+                <div class="photo-frame"><img src="https://www.dropbox.com/scl/fi/pkg255k4kfg0ptw7cdo72/photo_2026-06-19_16-32-51.jpg?rlkey=hrrhempvgnq45ra2if7wve1qv&st=m7zhq1jm&dl=1"></div>
+                <div class="photo-frame"><img src="https://www.dropbox.com/scl/fi/c2qe1791nkl74aa2fpv16/photo_2026-06-19_16-32-54.jpg?rlkey=b2fd3lqy1sm5sr3ysy2sq6iwt&st=x8l2v8e7&dl=1"></div>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>⏳ ثانیه‌شمار رابطه ما</h2>
+            <p style="font-size: 0.9rem; color: #888; margin-bottom: 10px;">از روزی که با هم شدیم:</p>
+            <div class="counter">
+                <div class="unit"><span id="days">0</span><label>روز</label></div>
+                <div class="unit"><span id="hours">0</span><label>ساعت</label></div>
+                <div class="unit"><span id="minutes">0</span><label>دقیقه</label></div>
+                <div class="unit"><span id="seconds">0</span><label>ثانیه</label></div>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>🧸 اتاق استیچ</h2>
+            <img src="https://www.dropbox.com/scl/fi/ljf1ameo0adgkkn7kas8t/photo_2026-06-19_16-33-12.jpg?rlkey=941ynyps4xv1sc4b4rhywm5le&st=lhb951ew&dl=1" class="stitch-img" onclick="stitchSpeak()">
+            <br>
+            <div class="bubble" id="stitch-bubble">بزن رو سرم پارمیس! 💙</div>
+        </section>
+
+        <!-- بخش اسپایدرمن شخصی‌سازی شده با لینک دراپ‌باکس شما -->
+        <section class="card spidey-theme">
+            <div class="spidey-content">
+                <h2>🕷️ ماموریت اسپایدرمن</h2>
+                <h3 style="margin-top:10px;">محافظت از لبخند پارمیس</h3>
+                <div class="badge">✔ وضعیت: فعال و بیدار</div>
+                <p>چون من عاشق اسپایدرمنم، همیشه مثل اون مراقبتم و هواتو دارم!</p>
+            </div>
+        </section>
+
+        <!-- جعبه کلمات قشنگ ارتقا یافته با ۲۰ متن انتخابی شما همراه با انیمیشن تایپ شدن -->
+        <section class="card">
+            <h2>🎁 جعبه کلمات قشنگ</h2>
+            <button class="main-btn" style="background:#cdb4db; color:white;" onclick="showSurprise()">یه حرف قشنگ بزن ✨</button>
+            <br>
+            <div class="bubble" id="surprise-display" style="display:none; color:#d81b60; font-weight:bold; border-right:4px solid #f472b6; margin-top: 15px; text-align: right; line-height: 1.6;"></div>
+        </section>
+
+        <!-- لیست ۱۰۰ دلیل کامل و بدون نقص شما -->
+        <section class="card">
+            <h2>💯 صد دلیل که دوستت دارم</h2>
+            <div class="reasons-container" id="reasons-list"></div>
+        </section>
+
+        <section class="card">
+            <h2>💌 نامه مخفی برای دختر رویاهام</h2>
+            <div class="envelope" onclick="openLetter()">✉️</div>
+            <div id="hidden-letter" class="letter-text">
+                پارمیس عزیزم، تو دقیقاً همون دختر رویاهای منی که همیشه آرزوشو داشتم. مرسی که هستی و دنیای سیاه و سفید منو با حضورت رنگی کردی. این سایت فقط یه بهانه‌ست که بدونی تمام فکر و ذکر منی. دوستت دارم تا ابد... <br> <br> <b style="color:#ff006e;">- مهدی ❤️</b>
+            </div>
+        </section>
+
+        <footer>
+            <h3 style="color: #ff006e; font-size: 1.4rem;">Forever Mahdi ❤️ Parmis</h3>
+        </footer>
+    </div>
+
+    <!-- مۆدال دلخوری ماه مخفی -->
+    <div id="moon-modal" class="modal">
+        <div class="modal-content">
+            <span onclick="closeMoonModal()" style="cursor:pointer; float:left; font-size:20px; color:#555;">❌</span>
+            <button id="moon-btn" class="main-btn" style="width:100%; margin-top:20px; font-size:1rem;" onclick="revealMoonLetter()">یه حرف از طرف مهدی اگر وقتی ازم دلخوری</button>
+            
+            <div id="moon-letter" style="display:none; margin-top:20px; line-height: 2; color:#444; font-size: 1.05rem;">
+                <p>سلام بچم</p>
+                <p>بعضی وقتا شوخی‌ای میکنم که نباید بکنم.</p>
+                <p>بعضی وقتا منظورم یه چیزه ولی تو یه چیز دیگه برداشت میکنی.</p>
+                <p>و بعضی وقتا هم واقعاً اشتباه میکنم.</p><br>
+                <p>ولی یه چیزی رو میخوام بدونی دختر قشنگم…</p>
+                <p>هیچوقت, هیچوقت، هیچوقت دلم نمیخواد دلیل اشک یا ناراحتی تو باشم.</p><br>
+                <p>اگر یه روز از دستم ناراحت شدی،</p>
+                <p>اگر یه روز دلت شکست،</p>
+                <p>اگر یه روز حس کردی درکت نکردم،</p>
+                <p>لطفاً توی دلت نگهش ندار.</p><br>
+                <p>بیا بهم بگو. دعوام کن. غر بزن. اخم کن. ولی ازم دور نشو.</p>
+                <p>چون من حاضرم هزار بار اشتباهمو جبران کنم، ولی حاضر نیستم یه بار توی دلت فکر کنی که برام مهم نیستی.</p><br>
+                <p>تو برای من فقط یه آدم نیستی…</p>
+                <p>تو همون دختری هستی که وقتی ناراحته دلم میگیره. وقتی خوشحاله لبخند میزنم. وقتی مریض میشه نگرانش میشم.</p>
+                <p>و وقتی ازم دلخور میشه، خودمم از خودم دلخور میشم.</p><br>
+                <p>پس اگر یه روز مهدی اشتباه کرد… قبل از اینکه ناراحتیتو توی دلت نگه داری، فقط یادت بیاد که این پسر شاید گاهی اشتباه کنه… ولی هیچوقت از دوست داشتنت دست نمیکشه. 🩵</p>
+                
+                <hr style="margin:20px 0; border:0; border-top:1px dashed #ccc;">
+                <h2 style="color:#d81b60; font-size:1.6rem; text-align:center; line-height:1.8;">
+                    🫂 بیا اینجا دختر کوچولو…<br>
+                    هنوزم دوستت دارم.<br>
+                    حتی وقتی ناراحتی.<br>
+                    حتی وقتی قهری.<br>
+                    حتی وقتی از دستم دلگیری.<br>
+                    حتی وقتی هیچکدوممون حال خوبی نداریم.<br>
+                    <span style="font-size:1.1rem; color:#4a148c; display:block; margin-top:15px;">من هنوزم همون مهدی‌ام که قلبش با دیدن لبخند تو آروم میشه.</span>
+                </h2>
+            </div>
+        </div>
+    </div>
+
+    <div id="sad-overlay">
+        <button class="close-sad" onclick="closeSadFlow()">بازگشت به سایت</button>
+        <div id="sad-text-container"></div>
+    </div>
+
+    <div id="hug-overlay">
+        <div id="arm-left" class="arm">🫲</div>
+        <div id="arm-right" class="arm">🫱</div>
+        <div id="hug-emoji">🫂</div>
+    </div>
+
+    <!-- بخش دنیای ماه  -->
+    <div id="moon-world-overlay">
+        <div class="stars-bg" id="stars-bg"></div>
+        <button class="close-sad" style="background: rgba(255,255,255,0.15); top:20px; left:20px; right:auto;" onclick="closeMoonWorld()">❌ خروج</button>
+        
+        <h1 style="color: #fff; font-size: 1.8rem; text-align: center; margin-top: 20px; z-index: 5; font-weight: bold;">سلام ماه من ♥️🫠💙🫂</h1>
+        
+        <img id="custom-moon" src="https://www.dropbox.com/scl/fi/19oerg2n7r84ojxft8tx7/IMG_2866.JPG?rlkey=pqly4jsjqj2fh0o81qun1kva6&st=lm9fwmuj&dl=1" alt="عکس ماه من">
+
+        <div class="moon-card">
+            <h3 style="color: #fef08a; margin-bottom: 10px;">🌠 آسمون پر ستاره</h3>
+            <p style="font-size: 0.9rem; margin-bottom: 15px;">روی دکمه بزن تا مهدی حرف دلشو برات بفرسته...</p>
+            <button class="main-btn" style="background: white; color: #1e1b4b;" onclick="triggerShootingStar()">یه شهاب‌سنگ صدا کن ✨</button>
+        </div>
+
+        <div class="moon-card">
+            <h3 style="color: #fef08a; margin-bottom: 10px;">🌍 مرکز دنیای من</h3>
+            <button class="main-btn" style="background: #a855f7; color: white;" onclick="showOrbit()">ببین کی مرکز دنیاست 💙</button>
+            
+            <div id="orbit-system">
+                <img id="center-photo" src="https://www.dropbox.com/scl/fi/yfjrjl43wbtbw3v55csif/photo_2026-06-25_18-40-08.jpg?rlkey=97igfix80klepev6c6q50dncy&st=kinnjbal&dl=1" alt="پارمیس من">
+                
+                <div class="orbit-item o-sun">☀️</div>
+                <div class="orbit-item o-moon">🌙</div>
+                <div class="orbit-item o-star">🌌</div>
+                <div class="orbit-item o-mahdi">❤️</div>
+            </div>
+            <p id="orbit-text" style="display:none; font-size: 1rem; line-height: 1.8; color: #e0e7ff; margin-top: 20px; font-weight: bold;">
+                «ماه، خورشید، ستاره‌ها، کهکشان‌ها<br>
+                و حتی خود مهدی<br>
+                همه دور زیباترین موجود دنیا میچرخن🫠🫠»
+            </p>
+        </div>
+
+<!-- کارت جدید تایم چت خاطره انگیز شما -->
+        <div class="moon-card">
+            <h3 style="color: #fef08a; margin-bottom: 10px;"> 03:32</h3>
+            <p style="font-size: 0.9rem; margin-bottom: 15px;">مرور خاطره‌ی اولین باری که بهت گفتم دوستت دارم... 🩵</p>
+            <button class="main-btn" style="background: #a855f7; color: white;" onclick="openChatMemory()">مرور چت اون شب ✨</button>
+        </div>
+    </div>
+
+    <div class="shooting-container" id="shooting-container"></div>
+
+    <!-- مۆدال کتابچه باز شونده واقعی به همراه ۱۵ صفحه متن احساسی شما -->
+    <div id="book-overlay">
+        <button class="close-sad" style="background: rgba(255,255,255,0.2); top:20px; right:20px; left:auto;" onclick="closeBook()">❌ بستن کتاب</button>
+        
+        <div class="book-wrapper">
+            <div class="real-book" id="book-body-element">
+                <!-- صفحه سمت راست کتاب -->
+                <div class="book-page-half right-page" id="book-right-page">
+                    <div class="book-page-title" id="book-title-right">عنوان صفحه</div>
+                    <div class="book-page-text-p" id="book-text-right">متن صفحه...</div>
+                </div>
+                <!-- صفحه سمت چپ کتاب -->
+                <div class="book-page-half left-page" id="book-left-page">
+                    <div class="book-page-title" id="book-title-left">عنوان صفحه</div>
+                    <div class="book-page-text-p" id="book-text-left">متن صفحه...</div>
+                </div>
+            </div>
+            <div class="book-controls">
+                <button class="book-btn" onclick="prevBookPage()">➡️ قبلی</button>
+                <span id="page-counter">صفحه ۱ و ۲ از ۱۵</span>
+                <button class="book-btn" onclick="nextBookPage()">بعدی ⬅️</button>
+            </div>
+        </div>
+    </div>
+<!-- پنجره تمام صفحه نمایش چت خودکار شما -->
+    <div id="chat-memory-overlay">
+        <div class="chat-container">
+            <div class="chat-header">
+                <h3>💬 مرور خاطره ۱۱ فروردین</h3>
+                <button onclick="closeChatMemory()" style="background:none; border:none; color:white; font-size:1.2rem; cursor:pointer;">
+❌</button>
+            </div>
+            <div class="chat-body" id="chat-messages-box">
+                <!-- پیام ها اینجا خودکار لود میشن -->
+            </div>
+            <button class="chat-footer-btn" id="chat-action-btn" onclick="startChatTimeline()">شروع چت 🎬</button>
+        </div>
+    </div>
+    <script>
+        // ================== اطلاعات ۱۵ صفحه کتابچه احساسی شما ==================
+        const bookData = [
+            { title: " صفحه اول", text: "برای پارمیس…\n\nاگر یک روز از من بپرسند زیباترین اتفاق زندگی‌ات چه بود، هیچ تاریخ خاصی یادم نمی‌آید…\nفقط یادم می‌آید یک روز، دختری وارد زندگی من شد که آرام‌آرام بدون اینکه خودش بداند، همه چیز را تغییر داد.\nآن روز نمی‌دانستم قرار است اسمش اینقدر برایم قشنگ شود…\nقرار است هر بار ببینمش، ناخودآگاه لبخند بزنم…\nو قرار است تمام این صفحه‌ها، فقط برای او نوشته شوند." },
+            { title: " صفحه دوم", text: "اولین دیدار…\n\nقبل از اینکه ببینمت، فکر می‌کردم آدم‌ها فقط در فیلم‌ها اینقدر خاص به نظر می‌رسند.\n\nاما وقتی برای اولین بار دیدمت…\nانگار برای چند ثانیه همه چیز دورم ساکت شد.\nفقط خودت بودی…\nو منی که حتی یادم رفته بود باید عادی رفتار کنم.\n\nآن لحظه هنوز هم یکی از قشنگ‌ترین خاطره‌های من است." },
+            { title: " صفحه سوم", text: "چیزی که بیشتر از همه دوست دارم…\n\nشاید خیلی‌ها اول ظاهر آدم‌ها را ببینند…\nاما چیزی که من را بیشتر از همه جذب کرد، شخصیتت بود.\n\nهمان حیا…\nهمان مهربانی…\nهمان دلی که دوست ندارد کسی را ناراحت کند.\n\nبرای من، این چیزها از هر زیبایی دیگری ارزشمندترند." },
+            { title: " صفحه چهارم", text: "آرامش…\n\nآدم بعضی وقت‌ها نمی‌فهمد آرامش یعنی چه…\nتا وقتی که یک نفر را پیدا کند که فقط بودنش کافی باشد.\n\nکنار تو لازم نیست نقش بازی کنم.\nلازم نیست خودم را تغییر بدهم.\nهمین که تو هستی…\nبرای دل من کافی است." },
+            { title: " صفحه پنجم", text: "لبخندت…\n\nنمی‌دانم خودت خبر داری یا نه…\n\nاما هر بار که می‌خندی،\nانگار یک نفر چراغ‌های دنیای من را روشن می‌کند.\n\nاگر روزی بتوانم دلیل یکی از آن لبخندها باشم…\nبرایم از هزار اتفاق قشنگ ارزشمندتر است." },
+            { title: " صفحه ششم", text: "نگاهت…\n\nبعضی نگاه‌ها را نمی‌شود توضیح داد.\n\nفقط می‌شود ساعت‌ها نگاهشان کرد…\nو باز هم سیر نشد.\n\nهر بار عکس‌هایت را می‌بینم،\nباز هم همان حس اولین بار برمی‌گردد." },
+            { title: " صفحه هفتم", text: "ممنونم…\n\nممنونم که آمدی.\n\nممنونم که باعث شدی بفهمم\nگاهی یک نفر می‌تواند تمام حال آدم را عوض کند.\n\nممنونم برای تمام لبخندهایی که شاید خودت هم یادت نباشد." },
+            { title: " صفحه هشتم", text: "آرزو…\n\nاگر از من بپرسند آرزویت چیست…\n\nجوابم خیلی ساده است.\n\nاینکه همیشه حالت خوب باشد…\nهمیشه بخندی…\nو هیچ‌وقت غم نتواند زیاد مهمان دلت شود." },
+            { title: " صفحه نهم", text: "روزهای معمولی…\n\nشاید عجیب باشد…\n\nاما من حتی روزهای معمولی را هم کنار تو دوست دارم.\n\nلازم نیست اتفاق خاصی بیفتد.\n\nگاهی فقط حرف زدن…\nگاهی فقط یک پیام…\nگاهی فقط اینکه بدانم حالت خوب است.\n\nهمین‌ها برای من کافی‌اند." },
+            { title: " صفحه دهم", text: "آینده…\n\nمن هیچ‌وقت دوست ندارم جلوتر از زمان حرکت کنم.\n\nفقط امیدوارم…\n\nهر وقت به گذشته نگاه کردیم،\nلبخند بزنیم و بگوییم:\n\n«خوشحالم که آن روزها کنار هم بودیم.»" },
+            { title: " صفحه یازدهم", text: "اگر یک روز ناراحت شدی…\n\nیادت باشد…\n\nهمیشه یک نفر هست\nکه ناراحتی تو را جدی می‌گیرد.\n\nیک نفر که دلش می‌خواهد حال دلت خوب باشد.\n\nیک نفر که لبخند تو،\nبرای او هم لبخند می‌آورد." },
+            { title: " صفحه دوازدهم", text: "زیبایی…\n\nبرای من،\nزیبایی فقط چهره نیست.\n\nزیبایی یعنی دلی که مهربان باشد…\nنگاهی که آرامش بدهد…\nرفتاری که آدم را به ماندن دعوت کند.\n\nو تو،\nهمه‌ی این‌ها را با هم داری." },
+            { title: " صفحه سیزدهم", text: "یک اعتراف کوچک…\n\nشاید هیچ‌وقت به زبان نیاورم…\n\nاما گاهی وسط شلوغ‌ترین روز،\nبی‌دلیل یادت می‌افتم.\n\nلبخند می‌زنم…\nو دوباره ادامه می‌دهم.\n\nهمین." },
+            { title: " صفحه چهاردهم", text: "اگر دوباره…\n\nاگر هزار بار دیگر هم قرار بود زندگی را از اول شروع کنم…\n\nباز هم دوست داشتم\nبه همان روزی برسم\nکه برای اولین بار با تو آشنا شدم." },
+            { title: " صفحه پانزدهم", text: "آخر کتاب…\n\nاگر تا اینجا را خواندی…\n\nفقط می‌خواهم یک چیز را بدانی.\n\nاین کتاب پایان ندارد.\n\nهر روزی که کنار هم لبخند می‌زنیم،\nهر خاطره‌ای که ساخته می‌شود،\nهر گفت‌وگوی ساده،\nهر لحظه‌ی قشنگ…\n\nهمه‌شان تبدیل به صفحه‌های جدید این کتاب می‌شوند.\n\nپس این آخرین صفحه نیست…\n\nفقط آخرین صفحه‌ای است که تا امروز نوشته شده.\n\nادامه‌ی این کتاب را با هم می‌نویسیم" }
+        ];
+
+        let bookSpreadIndex = 0; // هر اسپرد شامل ۲ صفحه است
+
+        function openBook() {
+            bookSpreadIndex = 0;
+            renderBookPages();
+            document.getElementById('book-overlay').style.fill = 'none';
+            document.getElementById('book-overlay').style.display = 'flex';
+        }
+
+        function closeBook() {
+            document.getElementById('book-overlay').style.display = 'none';
+        }
+
+        function renderBookPages() {
+            const rightPageIdx = bookSpreadIndex * 2;
+            const leftPageIdx = rightPageIdx + 1;
+            
+            const rightPageEl = document.getElementById('book-right-page');
+            const leftPageEl = document.getElementById('book-left-page');
+            const bodyEl = document.getElementById('book-body-element');
+            
+            // اضافه کردن کلاس انیمیشن ورق زدن
+            bodyEl.classList.add('page-turn-anim');
+            setTimeout(() => bodyEl.classList.remove('page-turn-anim'), 500);
+
+            // رندر صفحه راست
+            if (rightPageIdx < bookData.length) {
+                document.getElementById('book-title-right').innerText = bookData[rightPageIdx].title;
+                document.getElementById('book-text-right').innerText = bookData[rightPageIdx].text;
+                rightPageEl.style.visibility = 'visible';
+            } else {
+                rightPageEl.style.visibility = 'hidden';
+            }
+
+            // رندر صفحه چپ
+            if (leftPageIdx < bookData.length) {
+                document.getElementById('book-title-left').innerText = bookData[leftPageIdx].title;
+                document.getElementById('book-text-left').innerText = bookData[leftPageIdx].text;
+                leftPageEl.style.visibility = 'visible';
+            } else {
+                // صفحه آخر اگر فرد باشد صفحه چپ خالی می‌ماند
+                document.getElementById('book-title-left').innerText = "پایان فصل اول";
+                document.getElementById('book-text-left').innerText = "🤍\n\nبا عشق تقدیم به پارمیس من...";
+                leftPageEl.style.visibility = 'visible';
+            }
+
+            // بروزرسانی شمارنده صفحات
+            const totalSpreads = Math.ceil(bookData.length / 2);
+            document.getElementById('page-counter').innerText = `صفحه ${rightPageIdx + 1} و ${Math.min(leftPageIdx + 1, bookData.length)} از ${bookData.length}`;
+        }
+
+        function nextBookPage() {
+            const totalSpreads = Math.ceil(bookData.length / 2);
+            if (bookSpreadIndex < totalSpreads - 1) {
+                bookSpreadIndex++;
+                renderBookPages();
+            }
+        }
+
+        function prevBookPage() {
+            if (bookSpreadIndex > 0) {
+                bookSpreadIndex--;
+                renderBookPages();
+            }
+        }
+
+        // ================== لیست کامل ۱۰۰ دلیل بی نظیر شما ==================
+        const parmisReasons = [
+            "چونننن خوشگل‌ترین دختر دنیایییی 🥹",
+            "چونننن قشنگ‌ترین لبخندددد رو دارییی 🤍",
+            "چونننن چشات آدمو گمممم می‌کنه 🥺",
+            "چونننن صدات آرومممممم می‌کنه دلمووو 💙",
+            "چونننن خندیدنت قشنگ‌ترین صدای دنیاسسسس 🌎",
+            "چونننن اخمتم قشنگهههه 😂",
+            "چونننن با شیطنتات دلموووو می‌بری 🤏🏻",
+            "چونننن باحیایییییی 🫂",
+            "چونننن مهربون‌ترین دخترییییی 🩵",
+            "چونننن وجودت حال دلموووو خوب می‌کنه 🌸",
+            "چونننن وقتی پیام میدی لبخند میاد رو صورتممم",
+            "چونننن دلم همش می‌خواد مراقبت باشمممم",
+            "چونننن بوی خیالت هم قشنگهههه 🤍",
+            "چونننن قشنگ حرف میزنیییی",
+            "چونننن ناز کردنت دوست‌داشتنیههههه",
+            "چونننن قربون رفتارات میشمممم",
+            "چونننن نگاهت خاصهههه",
+            "چونننن دنیامو رنگی کردیییی 🌈",
+            "چونننن وقتی خوشحالی منم خوشحال میشممم",
+            "چونننن وقتی ناراحتی دلم می‌گیرههههه",
+            "چونننن قلبت قشنگهههه",
+            "چونننن خنده‌هات واقعیهههه",
+            "چونننن موهات قشنگههههه",
+            "چونننن ابروها محشرهههه",
+            "چونننن لپات خوردنیهههه 😂",
+            "چونننن همیشه تو ذهنمیییی",
+            "چونننن همه جا یادت می‌افتممم",
+            "چونننن اولین نفر دوست دارم روزمو باهاش شروع کنم توییی",
+            "چونننن آخر شبم دلم می‌خواد با تو حرف بزنممم",
+            "چونننن بودن کنار تو قشنگ‌ترین حسه",
+            "چونننن آرومممممم می‌کنی دلمووو",
+            "چونننن دلبرههههه",
+            "چونننن ماهههههه 🌙",
+            "چونننن قندددهههه",
+            "چونننن بانمککککییی",
+            "چونننن نازت قشنگهههه",
+            "چونننن لوس شدنت شیرینههههه",
+            "چونننن خنده‌هاتو هیچ‌وقت سیر نمی‌شمم",
+            "چونننن باهات احساس امنیت دارممم",
+            "چونننن خود خودتیییی",
+            "چونننن متفاوتیییی",
+            "چونننن خاصییییی",
+            "چونننن دلت پاکهههه",
+            "چونننن نیتت قشنگهههه",
+            "چونننن دلت مهربونهههه",
+            "چونننن همیشه قشنگییییی",
+            "چونننن با یه پیام حالت دلمو عوض می‌کنییی",
+            "چونننن دوست دارم بهت افتخار کنممم",
+            "چونننن برام باارزش‌ترین آدم دنیایییی",
+            "چونننن تویییی",
+            "چونننن دلم می‌خواد همیشه لبخند رو لبات باشهههه",
+            "چونننن دلم می‌خواد همیشه مراقبت باشممم",
+            "چونننن هر موفقیتت خوشحالم می‌کنهههه",
+            "چونننن هر ناراحتیت ناراحتم می‌کنهههه",
+            "چونننن دلت نرمههههه",
+            "چونننن احساساتت قشنگهههه",
+            "چونننن هیچ‌وقت از دیدنت سیر نمی‌شممم",
+            "چونننن قشنگ‌ترین اتفاق زندگیم شدیییی",
+            "چونننن دنیام با تو قشنگ‌ترهههه",
+            "چونننن توی هر آرزوم هستییی",
+            "چونننن بامزه‌ایییی",
+            "چونننن خنده‌هات مسریهههه",
+            "چونننن دوست دارم قربونت برمممم",
+            "چونننن دوست دارم دورت بگردمممم",
+            "چونننن دوست دارم خوشحال باشیییی",
+            "چونننن دوست دارم بخندیییی",
+            "چونننن دوست دارم بدرخشیییی",
+            "چونننن دوست دارم موفق بشیییی",
+            "چونننن دوست دارم مراقب خودت باشیییی",
+            "چونننن دوست دارم همیشه خودت باشیییی",
+            "چونننن هر روز بیشتر از دیروز برام عزیزییی",
+            "چونننن دلم با اسم تو آروم میشهههه",
+            "چونننن صد بارم ببینمت بازم دلم می‌خواد نگات کنممم",
+            "چونننن هیچ‌کس شبیه تو نیستتتت",
+            "چونننن بهترین انتخاب زندگیم شدییی",
+            "چونننن با تو آینده قشنگ‌تر به نظر میادددد",
+            "چونننن همه خاطره‌هام با تو رنگ دارن",
+            "چونننن همه چیز با تو قشنگ‌ترهههه",
+            "چونننن تو دلیل خیلی از لبخندامییی",
+            "چونننن هر روز دلم بیشتر برات تنگ میشههه",
+            "چونننن دلم می‌خواد همیشه کنارت باشممم",
+            "چونننن دلم می‌خواد همیشه هواتو داشته باشمم",
+            "چونننن دلم می‌خواد همیشه خوشحال ببینمتتت",
+            "چونننن دلم می‌خواد همیشه بهت افتخار کنممم",
+            "چونننن دلم می‌خواد همیشه مراقب قلبت باشممم",
+            "چونننن قشنگ‌ترین خانوم دنیایییی",
+            "چونننن خوشبوترین گل باغ دنیایییی 🌸",
+            "چونننن ماه‌تر از ماهیییی 🌙",
+            "چونننن شیرین‌تر از عسللللییی 🍯",
+            "چونننن قشنگ‌تر از همه رویاهامییی",
+            "چونننن با تو بودن قشنگهههه",
+            "چونننن اسمت قشنگهههه",
+            "چونننن هر وقت اسمت میاد ناخودآگاه لبخند می‌زنممم",
+            "چونننن همیشه تو قلبمیییی",
+            "چونننن همیشه برام خاص می‌مونیییی",
+            "چونننن همیشه اولویت دلمیییی",
+            "چونننن هیچ دلیلی لازم نیست، خودت کافییییی 🤍",
+            "چونننن هر روز بیشتر از قبل دوست‌داشتنی میشیییی",
+            "چونننن کنار تو خودِ واقعیمممم",
+            "چونننن… چون تو پارمیسییییی و همین به تنهایی صدتا دلیللللللهههه 🥹"
+        ];
+
+        // تزریق ۱۰۰ دلیل شما در المان مربوطه
+        const reasonsBox = document.getElementById('reasons-list');
+        parmisReasons.forEach((reason, index) => {
+            reasonsBox.innerHTML += `<div class="reason-line">${index + 1}. ${reason}</div>`;
+        });
+
+        // ================== لیست ۲۰ کلمه و متن قشنگ انتخابی شما ==================
+        const beautifulWords = [
+            "«بعضی آدم‌ها نمیان که فقط وارد زندگیت بشن؛ میان تا معنیِ خونه رو عوض کنن.»",
+            "«اگه دنیا یه جای امن داشته باشه، برای من کنار توئه.»",
+            "«قشنگ‌ترین بخش هر روزم، لحظه‌ایه که یادت می‌افتم.»",
+            "«تو از اون آدمایی هستی که حالِ خوبشون به بقیه هم می‌رسه‌.»",
+            "«بعضی لبخندها ارزش نگه داشتن تا آخر عمر رو دارن… لبخند تو یکی از اوناست.»",
+            "«کنارت حتی سکوت هم قشنگه.»",
+            "«دنیا وقتی اسم تو وسطش باشه، یه ذره مهربون‌تر میشه.»",
+            "«تو شبیه آرامش بعد از یه روز شلوغی.»",
+            "«قشنگی فقط دیده نمی‌شه… بعضی وقتا احساس می‌شه.»",
+            "⭐ «اگه قرار بود یه ستاره روی زمین باشه، مطمئنم اسمش پارمیس بود.»",
+            "«هر بار که خوشحال میشی، انگار یه گوشه از دنیای منم روشن‌تر میشه.»",
+            "«هیچ شبِ قشنگی بدون آرزوی حالِ خوبِ تو کامل نمی‌شه.»",
+            "«گاهی فقط دونستنِ اینکه هستی، برای آروم شدن کافیه.»",
+            "«قشنگ‌ترین اتفاق‌ها همیشه بی‌سروصدا وارد زندگی آدم میشن.»",
+            "«تو دلیل خیلی از لبخندهایی هستی که حتی خودم متوجهشون نمی‌شم.»",
+            "«بعضی آدم‌ها شبیه بهارن؛ هر جا باشن، حالِ اونجا عوض میشه.»",
+            "«هر بار که اسمت میاد، انگار زمان یه لحظه آروم‌تر می‌گذره.»",
+            "«دلم همیشه یه جای خالی داشت… تا وقتی که تو اومدی.»",
+            "«کنار تو، حتی روزهای معمولی هم خاطره میشن.»",
+            "«قشنگ‌ترین داستان زندگیم، از روزی شروع شد که اسم تو واردش شد.»"
+        ];
+
+        // انیمیشن تایپ شدن متون در جعبه کلمات قشنگ
+        let typingInterval;
+        function showSurprise() {
+            const display = document.getElementById('surprise-display');
+            display.style.display = 'inline-block';
+            display.innerHTML = ""; 
+            clearInterval(typingInterval);
+            
+            const randomText = beautifulWords[Math.floor(Math.random() * beautifulWords.length)];
+            let charIndex = 0;
+            
+            display.innerHTML = '<span id="typing-text"></span><span class="typing-cursor"></span>';
+            const textSpan = document.getElementById('typing-text');
+            
+            typingInterval = setInterval(() => {
+                if (charIndex < randomText.length) {
+                    textSpan.innerHTML += randomText.charAt(charIndex);
+                    charIndex++;
+                } else {
+                    clearInterval(typingInterval);
+                }
+            }, 4000 / randomText.length); // تنظیم سرعت متناسب با طول متن
+        }
+
+        // انیمیشن لودینگ کامل شدن ماه قبل از ورود به سایت
+        function triggerLoading() {
+            document.getElementById('loading-overlay').style.display = 'flex';
+            setTimeout(() => {
+                document.getElementById('loading-overlay').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('loading-overlay').style.display = 'none';
+                    startApp();
+                }, 500);
+            }, 3500); // ۳.۵ ثانیه زمان برای تماشای کامل شدن ماه
+        }
+
+        function startApp() {
+            document.getElementById('login-screen').style.transform = 'translateY(-100%)';
+            setTimeout(() => {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-content').style.display = 'block';
+                document.getElementById('hidden-moon').style.display = 'block'; 
+                document.getElementById('bg-music').play().catch(()=>{});
+            }, 800);
+        }
+
+        function moveButton() {
+            const btn = document.getElementById('no-btn');
+            const x = Math.random() * (window.innerWidth - 120);
+            const y = Math.random() * (window.innerHeight - 60);
+            btn.style.position = 'fixed';
+            btn.style.left = x + 'px';
+            btn.style.top = y + 'px';
+            btn.style.zIndex = "2000";
+        }
+        function sayYes() { alert("من خیلیییییی بیشتر دوستت دارم قشنگم! 😍💙"); }
+
+        // ثانیه‌شمار عشق شما
+        const startDate = new Date("May 16, 2026 18:56:00").getTime();
+        setInterval(() => {
+            const now = new Date().getTime();
+            const diff = now - startDate;
+            document.getElementById("days").innerText = Math.floor(diff / (1000 * 60 * 60 * 24));
+            document.getElementById("hours").innerText = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            document.getElementById("minutes").innerText = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            document.getElementById("seconds").innerText = Math.floor((diff % (1000 * 60)) / 1000);
+        }, 1000);
+
+        function stitchSpeak() {
+            const q = ["پارمیس! مهدی دیوونته 💙", "اوهانا یعنی خانواده!", "تو فرشته مهدی هستی!", "مهدی همیشه حواسش بهت هست"];
+            document.getElementById('stitch-bubble').innerText = q[Math.floor(Math.random()*q.length)];
+        }
+
+        function openLetter() {
+            const l = document.getElementById('hidden-letter');
+            l.style.display = (l.style.display === 'block') ? 'none' : 'block';
+        }
+        
+        function toggleMusic() {
+            const m = document.getElementById('bg-music');
+            const txt = document.getElementById('m-text');
+            if (m.paused) { m.play(); txt.innerText = "در حال پخش..."; }
+            else { m.pause(); txt.innerText = "موزیک متوقف شد"; }
+        }
+
+        function openMoonModal() { document.getElementById('moon-modal').style.display = 'flex'; }
+        function closeMoonModal() { 
+            document.getElementById('moon-modal').style.display = 'none'; 
+            document.getElementById('moon-letter').style.display = 'none';
+            document.getElementById('moon-btn').style.display = 'block';
+        }
+        
+        function revealMoonLetter() {
+            document.getElementById('moon-btn').style.display = 'none';
+            document.getElementById('moon-letter').style.display = 'block';
+        }
+
+        let sadTypingTimeout;
+        const sadLines = [
+            "سلام دختر کوچولوی من", "اگر الان اینجایی، احتمالاً یه چیزی اذیتت کرده…",
+            "شاید خسته‌ای…", "شاید ناراحتی…", "شاید دلت گرفته و حتی دلیلشو دقیق نمیدونی…",
+            "ولی قبل از هر چیزی، بیا یه لحظه همه چی رو کنار بذار و فقط اینو بخون.",
+            "قربون اون قلب مهربونت برم که همیشه بیشتر از چیزی که نشون میده درد میکشه…",
+            "قربون اون چشمات برم که خیلی وقتا ناراحت میشن ولی باز لبخند میزنن که کسی نفهمه…",
+            "قربون اون دختر قوی‌ای برم که همیشه سعی میکنه همه رو خوشحال کنه حتی وقتی خودش حالش خوب نیست…",
+            "حاله بیا یه لحظه پشت من قایم شو.", "لازم نیست الان قوی باشی.",
+            "لازم نیست همه چی رو تنهایی درست کنی.", "لازم نیست به کسی ثابت کنی که حالت خوبه.",
+            "فقط بیا پیش من…", "همین.", "اگر خسته‌ای استراحت کن.", "اگر ناراحتی گریه کن.",
+            "اگر دلت گرفته حرف بزن.", "ولی هیچوقت فکر نکن تنهایی.", "چون یه نفر هست…",
+            "که وقتی حالت خوب نیست دلش آروم نمیگیره.", "یه نفر هست که وقتی میخندی خوشحال میشه.",
+            "یه نفر هست که دلش میخواد همه غصه‌هات رو بگیره و خودش تحملشون کنه.",
+            "و اگر الان کنارم بودی،", "فقط بغلت میکردم…", "پیشونیتو میبوسیدم…",
+            "موهاتو کنار میزدم…", "و آروم توی گوشت میگفتم:", "“همه چی درست میشه دختر کوچولوی من…” 🩵"
+        ];
+
+        function startSadFlow() {
+            document.getElementById('sad-overlay').style.display = 'flex';
+            const container = document.getElementById('sad-text-container');
+            container.innerHTML = '';
+            let lineIdx = 0;
+            function typeLine() {
+                if (lineIdx >= sadLines.length || document.getElementById('sad-overlay').style.display === 'none') return;
+                const p = document.createElement('p');
+                p.style.opacity = 0; p.style.transition = 'opacity 1.5s ease-in-out';
+                p.innerText = sadLines[lineIdx];
+                container.appendChild(p);
+                setTimeout(() => { p.style.opacity = 1; p.scrollIntoView({ behavior: "smooth", block: "end" }); }, 100);
+                lineIdx++;
+                sadTypingTimeout = setTimeout(typeLine, 2800);
+            }
+            typeLine();
+        }
+        function closeSadFlow() { document.getElementById('sad-overlay').style.display = 'none'; clearTimeout(sadTypingTimeout); }
+
+        function startHug() {
+            const overlay = document.getElementById('hug-overlay');
+            const leftArm = document.getElementById('arm-left');
+            const rightArm = document.getElementById('arm-right');
+            const hugEmoji = document.getElementById('hug-emoji');
+
+            overlay.style.display = 'flex'; leftArm.style.display = 'block'; rightArm.style.display = 'block'; hugEmoji.style.display = 'none';
+            leftArm.style.transform = 'translate(0, -50%)'; rightArm.style.transform = 'translate(0, -50%)';
+
+            setTimeout(() => {
+                leftArm.style.transform = `translate(${window.innerWidth / 2 - 60}px, -50%)`;
+                rightArm.style.transform = `translate(-${window.innerWidth / 2 - 60}px, -50%)`;
+            }, 100);
+            setTimeout(() => { leftArm.style.display = 'none'; rightArm.style.display = 'none'; hugEmoji.style.display = 'block'; }, 1500);
+            setTimeout(() => { overlay.style.display = 'none'; }, 4500);
+        }
+
+        function openMoonWorld() {
+            document.getElementById('moon-world-overlay').style.display = 'flex';
+            const bg = document.getElementById('stars-bg');
+            bg.innerHTML = '';
+            for(let i=0; i<60; i++){
+                let star = document.createElement('div');
+                star.className = 'star-dot';
+                star.style.width = Math.random()*3 + 'px';
+                star.style.height = star.style.width;
+                star.style.left = Math.random()*100 + '%';
+                star.style.top = Math.random()*100 + '%';
+                star.style.animationDelay = Math.random()*2 + 's';
+                bg.appendChild(star);
+            }
+        }
+
+        function closeMoonWorld() { document.getElementById('moon-world-overlay').style.display = 'none'; }
+
+        const phrases = ["دوستت دارم ماه من", "عاشقتم دختر کوچولوی من", "خونه منی", "آرامش منی", "بهترین اتفاق زندگی منی", "قشنگ‌ترین آدم دنیامی", "امن‌ترین جای دنیامی", "همه دنیامی", "قلب منی", "دلیل لبخندمی", "ماه منی", "آسمون بدون تو تاریکه", "هر شب دنبال ماه میگردم", "تو روشن‌ترین نور زندگیمی", "حتی بین میلیون‌ها ستاره چشمم دنبال توئه", "ستاره‌ها قشنگن ولی تو ماهی", "ماه خوشگل من", "مال منی", "خوش اومدی ماه من", "اینجا خونه توئه", "قربون اون چشات برم", "قربون خنده‌هات برم", "قربون شیطنتات برم", "قربون قلب مهربونت برم", "قربون بغلت برم", "قربون دختر خوشگلم برم", "قربون وجودت برم", "قربون اون دل نازت برم", "قربون اخمات برم", "قربون خودت برم", "تا من هستم نترس", "نمیذارم غصه بخوری", "نمیذارم تنها بمونی", "هواتو دارم", "مواظبتم", "یه کوه پشتته", "هرجا باشی دلم پیشته", "همیشه برات وقت دارم", "همیشه میتونی رو من حساب کنی", "هیچوقت ولت نمیکنم", "ماه من", "دختر من", "نفس من", "آرامش من", "عشق من", "قلب من", "فرشته من", "خوشگل خانوم", "قندم", "زندگیم", "خانوم کوچولو", "همه دنیای منی"];
+        const customShootingStarImage = "https://www.dropbox.com/scl/fi/laa4mryzo3gv20rhk3vor/IMG_2865.PNG?rlkey=1tqhr5axb5xdr8v7bc0047kcj&st=f9m0krx5&dl=1"; 
+
+        function triggerShootingStar() {
+            const container = document.getElementById('shooting-container');
+            const wrapper = document.createElement('div');
+            wrapper.className = 'shooting-wrapper';
+            wrapper.style.animation = 'shootAcross 3.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards';
+
+            const img = document.createElement('img');
+            img.className = 'shooting-img';
+            img.src = customShootingStarImage ? customShootingStarImage : "https://cdn-icons-png.flaticon.com/512/1809/1809181.png"; 
+
+            const text = document.createElement('div');
+            text.className = 'shooting-phrase';
+            text.innerText = phrases[Math.floor(Math.random() * phrases.length)];
+
+            wrapper.appendChild(img);
+            wrapper.appendChild(text);
+            container.appendChild(wrapper);
+
+            setTimeout(() => { wrapper.remove(); }, 3500);
+        }
+
+        function showOrbit() {
+            document.getElementById('orbit-system').style.display = 'block';
+            document.getElementById('orbit-text').style.display = 'block';
+        }
+// ================== سیستم چت خودکار خاطره 03:32 ==================
+        const chatMemoryData = [
+            { sender: 'mahdi', name: 'Mahdi', text: 'یه لحظه بیا' },
+            { sender: 'parmis', name: 'Parmis', text: 'جونم' },
+            { sender: 'mahdi', name: 'Mahdi', text: 'جدا از هر ادا' },
+            { sender: 'parmis', name: 'Parmis', text: 'خب' },
+            { sender: 'mahdi', name: 'Mahdi', text: 'و شوخی' },
+            { sender: 'parmis', name: 'Parmis', text: 'خببببب' },
+            { sender: 'mahdi', name: 'Mahdi', text: 'دوستت دارم', time: '03:32' },
+            { sender: 'parmis', name: 'Parmis', text: 'چرت و پرت نگو' },
+            { sender: 'mahdi', name: 'Mahdi', text: 'چرا چرتو پرت' },
+            { sender: 'parmis', name: 'Parmis', text: 'خوابت میاد' },
+            { sender: 'mahdi', name: 'Mahdi', text: 'نه جدیم' },
+            { sender: 'parmis', name: 'Parmis', text: 'بخدا خوابت میاد' },
+            { sender: 'mahdi', name: 'Mahdi', text: 'میخوای باور نکنی بحثش جداست' },
+            { sender: 'parmis', name: 'Parmis', text: 'عجببب' },
+            { sender: 'mahdi', name: 'Mahdi', text: 'اره' },
+            { sender: 'parmis', name: 'Parmis', text: 'چی بگم' },
+            { sender: 'mahdi', name: 'Mahdi', text: 'نمیدونم' },
+            { sender: 'mahdi', name: 'Mahdi', text: 'چی دوست داری بگی' },
+            { sender: 'parmis', name: 'Parmis', text: 'نمیدونم' },
+            { sender: 'parmis', name: 'Parmis', text: 'والا' },
+            { sender: 'mahdi', name: 'Mahdi', text: 'عه' },
+            { sender: 'parmis', name: 'Parmis', text: 'اوممم' },
+            { sender: 'mahdi', name: 'Mahdi', text: 'اره' },
+            { sender: 'parmis', name: 'Parmis', text: 'خوابت نمیاد جدی؟' },
+            { sender: 'parmis', name: 'Parmis', text: 'اخه خودتم گفتی دو ساعت از وقت خوابت گذشته' },
+            { sender: 'mahdi', name: 'Mahdi', text: 'جدی دارم میگم خب' },
+            { sender: 'mahdi', name: 'Mahdi', text: 'خب دارم جدی حرف میزنم' },
+            { sender: 'parmis', name: 'parmis', text: 'خب از نظر رفاقته' },
+            { sender: 'mahdi', name: 'Mahdi', text: 'خب' },
+            { sender: 'parmis', name: 'Parmis', text: 'ب جمالت' },
+            { sender: 'parmis', name: 'Parmis', text: 'تو فقط جدی حرف بزن' },
+            { sender: 'mahdi', name: 'Mahdi', text: 'قربونت' },
+            { sender: 'mahdi', name: 'Mahdi', text: 'خب حالا بقیه رو ول کنیم' },
+            { sender: 'parmis', name: 'Parmis', text: 'خب' },
+            { sender: 'mahdi', name: 'Mahdi', text: 'اوهوم' },
+            { sender: 'parmis', name: 'Parmis', text: 'چی بگیم' },
+            { sender: 'mahdi', name: 'Mahdi', text: 'نمیدونم' },
+            { sender: 'mahdi', name: 'Mahdi', text: 'ببین اینکه کلا نه از اینکه آدمی باشم که برداشت بد داره و اینا نظر تورو راجب خودم نمیدونم اما' },
+            { sender: 'mahdi', name: 'Mahdi', text: 'من راجب تو چون این دو روز همش پیش اومد' },
+            { sender: 'mahdi', name: 'Mahdi', text: 'و خب گفتم که بهت بگم' },
+            { sender: 'mahdi', name: 'Mahdi', text: 'و نظرمم این بود واسه جفتمون زوده رابطه حتی اگر تو اوکی باشی' },
+            { sender: 'mahdi', name: 'Mahdi', text: 'و خب یهویی شد' },
+            { sender: 'mahdi', name: 'Mahdi', text: 'گفتم که دوستت دارم' },
+            { sender: 'parmis', name: 'Parmis', text: 'بخدا نمیدونم چی بگم' },
+            { sender: 'parmis', name: 'Parmis', text: 'بزار جمله بندی کنم' },
+            { sender: 'mahdi', name: 'Mahdi', text: 'بکن' },
+            { sender: 'mahdi', name: 'Mahdi', text: 'تو پسر خوبی هستیا ولی😂😂' },
+            { sender: 'parmis', name: 'Parmis', text: 'خلاصه حرفاتو بگو' },
+            { sender: 'parmis', name: 'Parmis', text: 'نمیفهمم' },
+            { sender: 'mahdi', name: 'Mahdi', text: 'خلاصش اینه من ازت خوشم میاد' },
+            { sender: 'mahdi', name: 'Mahdi', text: 'دیگه واضح تر از این نمیدونم' },
+            { sender: 'parmis', name: 'Parmis', text: 'ببین' },
+            { sender: 'parmis', name: 'Parmis', text: 'تو پسر خوبی هستیاااا ولی😂' },
+            { sender: 'mahdi', name: 'Mahdi', text: 'نبایدم انقد زود گفته میشد حتی از نظر خودم' },
+            { sender: 'parmis', name: 'Parmis', text: 'نمیدونم' },
+            { sender: 'parmis', name: 'Parmis', text: 'الان ناراحتی از گفتنش؟' },
+            { sender: 'mahdi', name: 'Mahdi', text: 'نه' },
+            { sender: 'mahdi', name: 'Mahdi', text: 'دوستت دارم' },
+            { sender: 'mahdi', name: 'Mahdi', text: 'راحت میگم حداقل' },
+            { sender: 'parmis', name: 'Parmis', text: 'اخه میگی نباید' },
+            { sender: 'mahdi', name: 'Mahdi', text: 'دوستت دارم' },
+            { sender: 'mahdi', name: 'Mahdi', text: 'دوستتتت دارممم' }
+        ];
+
+        let currentChatIndex = 0;
+        let chatTimer = null;
+
+        function openChatMemory() {
+            document.getElementById('chat-memory-overlay').style.display = 'flex';
+            resetChatMemory();
+        }
+
+        function closeChatMemory() {
+            document.getElementById('chat-memory-overlay').style.display = 'none';
+            resetChatMemory();
+        }
+
+        function resetChatMemory() {
+            clearTimeout(chatTimer);
+            currentChatIndex = 0;
+            document.getElementById('chat-messages-box').innerHTML = '';
+            const btn = document.getElementById('chat-action-btn');
+            btn.style.display = 'block';
+            btn.innerText = 'شروع مرور چت 🎬';
+        }
+
+        function startChatTimeline() {
+            document.getElementById('chat-action-btn').style.display = 'none';
+            renderNextChatMessage();
+        }
+
+        function renderNextChatMessage() {
+            const box = document.getElementById('chat-messages-box');
+            
+            if (currentChatIndex >= chatMemoryData.length) {
+                // اتمام چت
+                const systemEnd = document.createElement('div');
+                systemEnd.style.cssText = "text-align:center; color:#fef08a; margin: 20px 0; font-weight:bold; font-size:0.95rem; width:100%;";
+                systemEnd.innerText = "❤️ پایان مرور خاطره‌ی شیرین ۱۱ فروردین ❤️";
+                box.appendChild(systemEnd);
+                box.scrollTop = box.scrollHeight;
+                return;
+            }
+
+            const currentMsg = chatMemoryData[currentChatIndex];
+            
+            // ایجاد المان در حال تایپ (Is Typing...)
+            const typingRow = document.createElement('div');
+            typingRow.className = `msg-row ${currentMsg.sender}`;
+            typingRow.id = 'temp-typing-bubble';
+            
+            typingRow.innerHTML = `
+                <div class="typing-bubble">
+                    <span class="msg-name" style="color:#fff; margin-bottom:0; margin-left:8px;">${currentMsg.name}</span>
+                    <div class="typing-dots"><span></span><span></span><span></span></div>
+                </div>
+            `;
+            
+            box.appendChild(typingRow);
+            box.scrollTop = box.scrollHeight;
+
+            // توقف ۷ ثانیه‌ای برای شبیه‌سازی واقعی ایز تایپینگ
+            chatTimer = setTimeout(() => {
+                // حذف حباب تایپینگ
+                const tempBubble = document.getElementById('temp-typing-bubble');
+                if (tempBubble) tempBubble.remove();
+
+                // اضافه کردن پیام واقعی
+                const msgRow = document.createElement('div');
+                msgRow.className = `msg-row ${currentMsg.sender}`;
+                
+                // تنظیم تایم؛ اگر تایم اختصاصی نداشت، زمان فرضی حوالی اون موقع رو نشون میده
+                let displayTime = currentMsg.time ? currentMsg.time : "03:31";
+                if(currentChatIndex > 6 && !currentMsg.time) {
+                    displayTime = "03:33";
+                }
+
+                msgRow.innerHTML = `
+                    <div class="msg-bubble">
+                        <span class="msg-name">${currentMsg.name}</span>
+                        <div>${currentMsg.text}</div>
+                        <span class="msg-time">${displayTime}</span>
+                    </div>
+                `;
+                
+                box.appendChild(msgRow);
+                box.scrollTop = box.scrollHeight;
+
+                currentChatIndex++;
+                // رفتن به پیام بعدی
+                renderNextChatMessage();
+            }, 4000); // دقیقاً هر ۷ ثانیه یک پیام
+        }
+    </script>
+</body>
+</html>
